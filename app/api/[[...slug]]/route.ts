@@ -15,34 +15,41 @@ app.use(cors())
  *	POST REQUEST FOR STRIPE
  */
 app.post("/checkout", async (c) => {
-    /** Our data will look like [{ id, price },{ id, price }] */
-    const body = await c.req.json()
+  /** Our data will look like [{ id, price },{ id, price }] */
+  const body = await c.req.json()
 
-    const origin = c.req.header("origin")
+  const origin = c.req.header("origin")
 
-    const items = body.items
+  const items = body.items
 
-    let lineItems: StripeLineItemType[] = []
+  let lineItems: StripeLineItemType[] = []
 
-    /** Reformats the data in the way stripe wants */
-    items.forEach((item: LineItemType) => {
-        lineItems.push({
-            price: item.id, // stripe uses price for id
-            quantity: item.quantity,
-        })
+  /** Reformats the data in the way stripe wants */
+  items.forEach((item: LineItemType) => {
+    lineItems.push({
+      price: item.id, // stripe uses price for id
+      quantity: item.quantity,
     })
+  })
 
-    /** Send the data to stripe */
-    const session = await stripe.checkout.sessions.create({
-        line_items: lineItems,
-        mode: "payment",
-        success_url: `${origin}/?success`,
-        cancel_url: `${origin}/?cancel`,
-        allow_promotion_codes: true,
-    })
+  /** Send the data to stripe */
+  const session = await stripe.checkout.sessions.create({
+    line_items: lineItems,
+    mode: "payment",
+    success_url: `${origin}/?success`,
+    cancel_url: `${origin}/?cancel`,
+    allow_promotion_codes: true,
+  })
 
-    /** Returns the url */
-    return c.json(session.url)
+  /** Returns the url */
+  return c.json(session.url)
 })
 
+app.get("/hello", (c) => {
+  return c.json({
+    message: "Hello Next.js!",
+  })
+})
+
+export const GET = handle(app)
 export const POST = handle(app)
